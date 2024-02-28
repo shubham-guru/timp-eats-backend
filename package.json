@@ -1,10 +1,12 @@
 {
+  "type": "module",
   "name": "timp-eats-backend",
   "version": "1.0.0",
   "description": "backend development of timp eats",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build":"tsc"
   },
   "repository": {
     "type": "git",
@@ -20,16 +22,12 @@
     "url": "https://github.com/shubham-guru/timp-eats-backend/issues"
   },
   "homepage": "https://github.com/shubham-guru/timp-eats-backend#readme",
-  "devDependencies": {
-    "@types/aws-lambda": "^8.10.134",
-    "@types/node": "^20.11.20",
-    "typescript": "^5.3.3"
-  },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.521.0",
     "@aws-sdk/lib-dynamodb": "^3.521.0",
     "dotenv": "^16.4.5",
     "partparse": "^1.0.1",
-    "razorpay": "^2.9.2"
+    "razorpay": "^2.9.2",
+    "ulid": "^2.3.0"
   }
 }

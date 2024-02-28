@@ -1,23 +1,20 @@
 
-
-
-
-export function generateScanParams({ filters } :any) {
+export function generateScanParams({ filters } ) {
     if (!filters.length) return {
         expand: false,
         names: {},
         values: {},
         expression: {}
     }
-    const names = Object.fromEntries(filters.map((filter :any, index :number) => {
+    const names = Object.fromEntries(filters.map((filter , index ) => {
         return [`#F${index}`, filter.name]
     }))
-    const values = Object.fromEntries(filters.map((filter :any, index :number) => {
+    const values = Object.fromEntries(filters.map((filter , index ) => {
         return [`:val${index}`, filter.value]
     }))
     const namesKeys = Object.keys(names)
     const valuesKeys = Object.keys(values)
-    const expression = filters.map((filter :any, index :number ):any => {
+    const expression = filters.map((filter , index  ) => {
         return filter.operator?.padEnd(filter.operator?.length + 1)
                                .concat(parseExpressionCondition({
             name: namesKeys[index],
@@ -33,7 +30,7 @@ export function generateScanParams({ filters } :any) {
     }
 }
 
-export function generateQueryParams({dbName, partition = {}, sort = {}, filters}:any){
+export function generateQueryParams({dbName, partition = {}, sort = {}, filters}){
 
     const sortExpression = sort.name ?  parseSortExpression({
         name: '#KS',
@@ -45,7 +42,7 @@ export function generateQueryParams({dbName, partition = {}, sort = {}, filters}
 
     let names = [['#KP', partition.name], ...(sort.name ? [['#KS', sort.name]] : [])];
 
-    const values = filters.map(({ name, value, expression, operator } :any , index :number) : any => {
+    const values = filters.map(({ name, value, expression, operator }  , index ) => {
 
         const [hashName, n] = (()=> {
             const matchedFilterName = names.find(([hash, filterName]) => filterName === name)
@@ -75,7 +72,7 @@ export function generateQueryParams({dbName, partition = {}, sort = {}, filters}
     }
 }
 
-function parseExpressionCondition({name, value, expression = 'equal'} :any){
+function parseExpressionCondition({name, value, expression = 'equal'} ){
     if(expression === 'equal') return [name, '=', value].join(' ')
     if(expression === 'notEqual') return [name, '<>', value].join(' ')
     if(expression === 'contains') return `contains(${name}, ${value})`
@@ -84,7 +81,7 @@ function parseExpressionCondition({name, value, expression = 'equal'} :any){
 }
 
 
-function parseSortExpression({name, value, expression = 'equal', betweenVal = ''}:any){
+function parseSortExpression({name, value, expression = 'equal', betweenVal = ''}){
     if(expression === 'equal')return `${name} = :${value}`
     if(expression === 'lessThan')return `${name} < :${value}`
     if(expression === 'lessThanEqual')return `${name} <= :${value}`
@@ -94,26 +91,14 @@ function parseSortExpression({name, value, expression = 'equal', betweenVal = ''
     if(expression === 'beginsWith')return `begins_with ( sortKeyName, :${value} )`
     return `${name} = :${value}`
 }
-interface Item {
-    [key: string]: any;
-}
 
-interface ExpressionParams {
-    [key: string]: string;
-}
 
-interface UpdateParams {
-    names: ExpressionParams;
-    expression: string;
-    values: ExpressionParams;
-}
-
-export function generateUpdateParams({ item }: { item: Item }): UpdateParams | false {
+export function generateUpdateParams({ item }) {
     if (!item) return false;
 
-    const values: ExpressionParams = {};
-    const names: ExpressionParams = {};
-    const expression = Object.entries(item).map(([property, value], index: number) => {
+    const values = {};
+    const names = {};
+    const expression = Object.entries(item).map(([property, value], index) => {
         values[`:val${index}`] = value;
         names[`#F${index}`] = property;
         // Assuming parseExpressionCondition returns a string

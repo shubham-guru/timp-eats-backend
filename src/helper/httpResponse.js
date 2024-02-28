@@ -1,8 +1,5 @@
-type IHttpResponse ={
-    code:number
-    body:string | number | Array<string|object|number> | object
-}
-function buildResponse({code, body} : IHttpResponse){
+
+function buildResponse({code, body}){
     return {
         statusCode: code,
         headers: {
