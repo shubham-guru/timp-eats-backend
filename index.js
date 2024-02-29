@@ -1,7 +1,7 @@
 import { buildResponse } from './src/helper/httpResponse.js';
 import { getRoutes } from './src/router.js';
-import { createOrderWithUser, updateOrder } from './src/fucntion/dbHandle.js';
-import { checkout, paymentVerification } from './src/fucntion/paymentHandle.js';
+import { createOrderWithUser, getUser, updateOrder } from './src/fucntion/dbHandle.js';
+import { paymentVerification } from './src/fucntion/paymentHandle.js';
 import {parse} from "partparse";
 
 export async function handler(event) {
@@ -11,7 +11,7 @@ export async function handler(event) {
             path = "",
             // headers: { Authorization: auth },
             headers,
-            queryStringParameters,
+            queryStringParameters : queryParams,
             body: unknownTypeBody,
             isBase64Encoded,
             resource,
@@ -22,12 +22,12 @@ export async function handler(event) {
         //   let response = { code: 401, body: "" };
 
           const parsedBody = await (async () => {
-            if (isBase64Encoded && unknownTypeBody) return parse(unknownTypeBody);
+            if (isBase64Encoded && unknownTypeBody) return parse(event);
             return unknownTypeBody;
           })();
         let response ={
-            statusCode: 200,
-            body: JSON.stringify({ message: 'Success' }),
+            statusCode: 400,
+            body: JSON.stringify({ message: 'bad request' }),
             // add other properties as needed, such as headers
         };
         if(pathParameters === null) return buildResponse({code:401, body: "access_denied"})
@@ -39,14 +39,17 @@ export async function handler(event) {
             case "createOrder":
                 response = await createOrderWithUser(parsedBody)
                 break;
-            case "checkout":
-                response = await checkout(parsedBody)
-                break;
             case "updateOrder":
                 response = await updateOrder(parsedBody)
                 break;
             case 'getPaymentConfirmation':
                 response = await paymentVerification(parsedBody)
+                break;
+            case 'getUser':
+                response = await getUser(queryParams)
+                break;
+            case "invalidRequest":
+                response = buildResponse({code:401,body:{success:false,message:'access denied'}})
                 break;
             default:
                 break;

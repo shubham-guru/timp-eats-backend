@@ -6,12 +6,17 @@ export function getRoutes(path,method,proxy) {
         if(proxy === 'updateOrder'){
             return 'updateOrder'
         }
-        if(proxy === 'checkout'){
-            return 'checkout'
-        }
         if(proxy === 'getPaymentConfirmation'){
             return 'getPaymentConfirmation'
         }
         return 'invalidRequest'
     }
+    else if(method === 'GET'){
+        if(proxy === 'getUser'){
+            return 'getUser'
+        }
+        return 'invalidRequest'
+    }
+    return 'invalidRequest'
+
 }

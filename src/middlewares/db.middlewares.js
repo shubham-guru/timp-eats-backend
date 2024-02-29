@@ -2,7 +2,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 // import { generateScanParams, generateQueryParams, generateUpdateParams } from "./db_helper";
 // import { BatchGetCommand, BatchWriteCommand, DeleteCommand, DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, UpdateCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
-import { DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb";
 // import { generateQueryParams, createBatchWriteParams } from 'simple-dynamo-utils'
 
 
@@ -21,6 +21,40 @@ export async function createDynamoRecord({dbName, item, messages = {} }){
         return { code: 200, body: messages[200] || '' }
     }).catch((error) => {
         console.error('Error creating Item with details: ', params, ' with error: ', error);
+        return { code: 500, body: messages[500] || '' }
+    })
+}
+
+export async function updateDynamo({params,errorMessages={}}){
+    const sendParams = new UpdateCommand(params)
+    console.log("🚀 ~ file: dbFunctions.js:162 ~ updateDynamo ~ sendParams:", sendParams)
+
+    return docClient.send(sendParams).then((response) => {
+        if (!response) return { code: 404, body: errorMessages[404] || '' }
+        console.log(response);
+        if (response) return { code: 200, body: response.Attributes || errorMessages[200] || '' }
+        return { code: 200, body: response }
+    }).catch((error) => {
+        console.error('Error occurred while fetching data: ', params, ' with error: ', error);
+        return { code: 500, body: errorMessages[400] || errorMessages[500] || '' }
+    })
+}
+
+export async function getDynamoRecord({ dbName, keyObject, projection, filters = {}, messages = {} }){
+    const scanParams = new GetCommand({
+        TableName: dbName, 
+        Key: {
+            ...keyObject
+        },
+        ...filters, //TODO: remove
+        ...(projection ? { ProjectionExpression: projection } : {}),
+    })
+
+    return docClient.send(scanParams).then((response) => {
+        if(!response.Item) return { code: 404, body: messages[404] || ''}
+        return { code: 200, body: response.Item }
+    }).catch((error) => {
+        console.error('Error occurred querying with parameters: ', scanParams, ' with error: ', error);
         return { code: 500, body: messages[500] || '' }
     })
 }
@@ -166,21 +200,6 @@ export async function createDynamoRecord({dbName, item, messages = {} }){
 //     })
 // }
 
-
-// async function updateDynamo({params,errorMessages={}}){
-//     const sendParams = new UpdateCommand(params)
-//     console.log("🚀 ~ file: dbFunctions.js:162 ~ updateDynamo ~ sendParams:", sendParams)
-
-//     return docClient.send(sendParams).then((response) => {
-//         if (!response) return { code: 404, body: errorMessages[404] || '' }
-//         console.log(response);
-//         if (response) return { code: 200, body: response.Attributes || errorMessages[200] || '' }
-//         return { code: 200, body: response }
-//     }).catch((error) => {
-//         console.error('Error occurred while fetching data: ', params, ' with error: ', error);
-//         return { code: 500, body: errorMessages[400] || errorMessages[500] || '' }
-//     })
-// }
 
 // interface Item {
 //     [key: string]: any;
