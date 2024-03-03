@@ -20,7 +20,7 @@ export function generatePaymentCreateSchema(payemnt_details){
         order_id: payemnt_details.order_id,
         razorpay_order_id: payemnt_details.razorpay_order_id,
         payment_mode:payemnt_details.payment_mode,
-        status:'unpaid',
+        pay_status:'unpaid',
         createdAt: currentDate(),
         date: currentDate('dateString')
       }
@@ -35,7 +35,7 @@ export function generateCODCreateSchema(payemnt_details){
         razorpay_order_id:'COD_'+ulid(),
         order_id: payemnt_details.order_id,
         payment_mode:payemnt_details.payment_mode,
-        status:'unpaid',
+        pay_status:'unpaid',
         createdAt: currentDate(),
         date: currentDate('dateString')
       }

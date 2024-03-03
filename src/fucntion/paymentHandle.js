@@ -71,6 +71,7 @@ export async function checkout(body) {
         },
       });
 
+      console.log("🚀 ~ checkout ~ createPayment:", createPayment)
       return buildResponse({
         code: 200,
         body: {
@@ -114,7 +115,7 @@ export async function paymentVerification(body) {
           razorpay_order_id: razorpay_order_id,
         },
         UpdateExpression:
-          "SET razorpay_payment_id = :val1, razorpay_signature = :val2 , status= :val3, updated_at= :val4", // Define the attributes you want to update
+          "SET razorpay_payment_id = :val1, razorpay_signature = :val2 , pay_status= :val3, updated_at= :val4", // Define the attributes you want to update
         ExpressionAttributeValues: {
           ":val1": razorpay_payment_id,
           ":val2": razorpay_signature,
