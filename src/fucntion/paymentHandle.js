@@ -1,5 +1,5 @@
 import * as crypto from "crypto";
-import { buildResponse } from "../helper/httpResponse.js";
+import { builRedirectResponse, buildResponse } from "../helper/httpResponse.js";
 import * as dotenv from "dotenv";
 import { generateCODCreateSchema, generatePaymentCreateSchema } from "../schema/paymentScehma.js";
 import {
@@ -130,8 +130,8 @@ export async function paymentVerification(body) {
       updatePaymentRecord
     );
 
-    return buildResponse({
-      code: 303,
+    return builRedirectResponse({
+      code: 302,
       body: `${domain}/payment-status?reference=${razorpay_payment_id}`,
     });
   } else {

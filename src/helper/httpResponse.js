@@ -12,4 +12,13 @@ function buildResponse({code, body}){
     }
 }
 
-export {buildResponse }
+function builRedirectResponse({code, body}){
+    return {
+        statusCode: code,
+        headers: {
+            Location: body // Specify the redirect URL in the Location header
+        }
+    }
+}
+
+export {buildResponse, builRedirectResponse }
