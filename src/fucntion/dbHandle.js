@@ -1,12 +1,13 @@
 import { buildResponse } from "../helper/httpResponse.js";
 import { createDynamoRecord, getDynamoRecord } from "../middlewares/db.middlewares.js";
+import { sendMailToClient } from "../middlewares/mailler/mailing.js";
 import generateOrderSchema from "../schema/orderSchema.js";
 import { generateUSerSchema } from "../schema/userSchema.js";
 import { checkout } from "./paymentHandle.js";
 
 export async function createOrderWithUser(details) {
   try {
-    const { user, order, amount } = JSON.parse(details);
+    const { user, order, amount,currency } = JSON.parse(details);
     const UserSchema = generateUSerSchema(user);
     const orderSchema = generateOrderSchema(order, UserSchema.user_id);
 
@@ -26,6 +27,7 @@ export async function createOrderWithUser(details) {
         },
       }),
       await checkout({
+        currency,
         amount,
         order_id: orderSchema.order_id,
         payment_mode:orderSchema.payment_mode,
@@ -53,14 +55,18 @@ export async function createOrderWithUser(details) {
         body: { sucess: false, message: "Error in creating payment" },
       });
 
-    return buildResponse({
-      code: 200,
-      body: {
-        message: "user and order created successfully",
-        sucess: true,
-        order: JSON.parse(checkoutOrder.body).order,
-      },
-    });
+      const sendMail = await sendMailToClient({toAddress:'imgabbar07@gmail.com', subject:'order success', message:{user:"manish",body:"order success"}})
+      console.log("🚀 ~ createOrderWithUser ~ sendMail:", sendMail)
+      const finalRes =  buildResponse({
+        code: 200,
+        body: {
+          message: "user and order created successfully",
+          sucess: true,
+          order: JSON.parse(checkoutOrder.body).order,
+        },
+      });
+      console.log(finalRes,"final response")
+    return finalRes
   } catch (error) {
     console.log("🚀 ~ createOrderWithUser ~ error:", error);
     return buildResponse({ code: 400, body: "bad request" });

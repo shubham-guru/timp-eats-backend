@@ -1,16 +1,6 @@
 import { ulid } from "ulid";
 import { currentDate } from "../helper/utility.js";
 
-// type IUserDetail ={
-//     user_id: string,
-//     email,
-//     phone_number|number,
-//     full_name,
-//     complete_address:Array<object>,
-//     createdAt | number,
-//     date: string | number
-// }
-
 
 export function generateUSerSchema(user_details){
     const user_id  = 'USER_'+ulid();

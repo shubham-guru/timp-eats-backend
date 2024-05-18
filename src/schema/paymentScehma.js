@@ -18,7 +18,7 @@ export function generatePaymentCreateSchema(payemnt_details){
     const generate_pay  ={
         pay_id: pay_id,
         order_id: payemnt_details.order_id,
-        razorpay_order_id: payemnt_details.razorpay_order_id,
+        paypal_order_id: payemnt_details.paypal_order_id,
         payment_mode:payemnt_details.payment_mode,
         pay_status:'unpaid',
         createdAt: currentDate(),
