@@ -6,7 +6,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "backup": "mv ~/Workiinnnggg/lambda/timp_eats_server/upload/timp_eats_server.zip ~/Workiinnnggg/lambda/timp_eats_server/backup/timp_eats_server_$(date +%F-%T).zip",
+    "preupload": "npm run backup && npm run zip",
+    "upload": "aws lambda update-function-code --region us-east-1 --function-name timp_orders --zip-file fileb://~/Workiinnnggg/lambda/timp_eats_server/upload/timp_eats_server.zip",
+    "zip": "zip -r ~/Workiinnnggg/lambda/timp_eats_server/upload/timp_eats_server.zip *"
   },
   "repository": {
     "type": "git",
