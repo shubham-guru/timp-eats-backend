@@ -6,8 +6,8 @@ export function getRoutes(path,method,proxy) {
         if(proxy === 'updateOrder'){
             return 'updateOrder'
         }
-        if(proxy === 'getPaymentConfirmation'){
-            return 'getPaymentConfirmation'
+        if(proxy === 'paymentConfirmation'){
+            return 'paymentConfirmation'
         }
         return 'invalidRequest'
     }

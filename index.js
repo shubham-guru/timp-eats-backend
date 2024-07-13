@@ -1,8 +1,8 @@
 import { buildResponse } from './src/helper/httpResponse.js';
 import { getRoutes } from './src/router.js';
 import { createOrderWithUser, getUser, updateOrder } from './src/fucntion/dbHandle.js';
-// import { paymentVerification } from './src/fucntion/paymentHandle.js';
 import {parse} from "partparse";
+import { paymentVerification } from './src/fucntion/paymentHandle.js';
 
 export async function handler(event) {
     try {
@@ -43,9 +43,9 @@ export async function handler(event) {
             case "updateOrder":
                 response = await updateOrder(parsedBody)
                 break;
-            // case 'getPaymentConfirmation':
-            //     response = await paymentVerification(parsedBody)
-            //     break;
+            case 'paymentConfirmation':
+                response = await paymentVerification(parsedBody)
+                break;
             case 'getUser':
                 response = await getUser(queryParams)
                 break;

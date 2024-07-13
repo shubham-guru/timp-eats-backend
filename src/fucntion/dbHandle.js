@@ -85,7 +85,7 @@ export async function createOrderWithUser(details) {
 }
 
 export async function updateOrder(body) {
-  return buildResponse({ code: 200, body: "" });
+  
 }
 
 export async function updateUser() { }
