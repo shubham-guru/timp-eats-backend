@@ -15,7 +15,6 @@ async function sendMailToClient(request) {
 
   return await Promise.allSettled([teamPromise])
     .then((res) => {
-      console.log("🚀 ~ .then ~ res:", res)
       return buildResponse({code:200, body:"E-Mail sent successfully"});
     })
     .catch((error) => {

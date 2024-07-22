@@ -27,7 +27,7 @@ export async function createDynamoRecord({dbName, item, messages = {} }){
 
 export async function updateDynamo({params,errorMessages={}}){
     const sendParams = new UpdateCommand(params)
-    console.log("🚀 ~ file: dbFunctions.js:162 ~ updateDynamo ~ sendParams:", sendParams)
+    // console.log("🚀 ~ file: dbFunctions.js:162 ~ updateDynamo ~ sendParams:", sendParams)
 
     return docClient.send(sendParams).then((response) => {
         if (!response) return { code: 404, body: errorMessages[404] || '' }

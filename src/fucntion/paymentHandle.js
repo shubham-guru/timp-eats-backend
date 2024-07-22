@@ -1,19 +1,12 @@
 import * as crypto from "crypto";
 import { buildResponse } from "../helper/httpResponse.js";
 import * as dotenv from "dotenv";
-import {
-  generateCODCreateSchema,
-  generatePaymentCreateSchema,
-} from "../schema/paymentScehma.js";
-import {
-  createDynamoRecord,
-  updateDynamo,
-} from "../middlewares/db.middlewares.js";
+import {getDynamoRecord,updateDynamo} from "../middlewares/db.middlewares.js";
 import Razorpay from "razorpay";
+import { sendMailToClient } from "../middlewares/mailler/mailing.js";
 dotenv.config();
 
 const razorpay_secret = process.env.RAZORPAY_APT_SECRET || "";
-const domain = process.env.REDIRECT_PAYMENT_DOMAIN || "";
 
 export const instance = new Razorpay({
   key_id: process.env.RAZORPAY_API_KEY || "",
@@ -84,12 +77,12 @@ export async function paymentVerification(body) {
     console.log("🚀 ~ paymentVerification ~ isAuthentic:", isAuthentic);
 
     const [paymentStatus, orderStatus] = await Promise.all([
-      await instance.payments.fetch(razorpay_payment_id),
-      await instance.orders.fetch(razorpay_order_id),
+      instance.payments.fetch(razorpay_payment_id),
+      instance.orders.fetch(razorpay_order_id),
     ]);
     console.log("🚀 ~ paymentVerification ~ orderStatus:", orderStatus);
     console.log("🚀 ~ paymentVerification ~ paymentStatus:", paymentStatus);
-    const { id, status: payment_status, fee, tax, acquirer_data } = paymentStatus;
+    const { id, status: payment_status, fee, tax, acquirer_data, email } = paymentStatus;
     const { status: order_status, receipt } = orderStatus;
 
     // Database comes here
@@ -98,7 +91,7 @@ export async function paymentVerification(body) {
         paymentStatus.status === "captured" &&
         orderStatus.status === "paid"
       ) {
-        const updatePaymentRecord = await updateDynamo({
+        const updatePaymentRecordPromise = updateDynamo({
           params: {
             TableName: "order_data",
             Key: {
@@ -116,10 +109,55 @@ export async function paymentVerification(body) {
             ReturnValues: "ALL_NEW",
           },
         });
-        console.log(
-          "🚀 ~ paymentVerification ~ updatePaymentRecord:",
-          updatePaymentRecord
-        );
+
+        const getUserDetailPromise = getDynamoRecord({
+          dbName: 'users',
+          keyObject: {
+            email: email
+          }
+        })
+        
+        const [updatePaymentRecord,getUserDetail] = await Promise.all([updatePaymentRecordPromise,getUserDetailPromise])
+        
+        console.log("🚀 ~ paymentVerification ~ updatePaymentRecord:",updatePaymentRecord);
+        console.log("🚀 ~ paymentVerification ~ getUserDetail:", getUserDetail)
+        const message = {
+          user: {
+            full_name: getUserDetail.body.full_name,
+            complete_address: getUserDetail.body.complete_address[0],
+            phone_number: getUserDetail.body.phone_number,
+          },
+          payment: {
+            razorpay_payment_id: updatePaymentRecord.body.razorpay_payment_id,
+            payment_status: updatePaymentRecord.body.razorpay_order_status,
+            date: updatePaymentRecord.body.date,
+          },
+          order_id: updatePaymentRecord.body.order_id,
+          order: updatePaymentRecord.body.order_detail,
+          payment_method: updatePaymentRecord.body.payment_mode,
+          delievery_charge: updatePaymentRecord?.body?.delievery_charge !== 0 ? updatePaymentRecord.body.delievery_charge : null,
+          sub_total: updatePaymentRecord.body.amounts,
+        }
+
+        const sendCustomerMailPromise = sendMailToClient({
+          toAddress: email,
+          subject: "Order placed",
+          message: message
+        });
+
+        const sendSellerMailPromise = sendMailToClient({
+          toAddress: "timpeats0@gmail.com",
+          subject: "Order received",
+          message: message
+        });
+
+        const [sendCustomerMail, sendSellerMail] = await Promise.all([
+          sendCustomerMailPromise,
+          sendSellerMailPromise,
+        ]);
+
+        console.log("🚀 ~ createOrderWithUser ~ sendSellerMail:",sendSellerMail);
+        console.log("🚀 ~ createOrderWithUser ~ sendMail:", sendCustomerMail);
         return buildResponse({
           code: 200,
           body: {
@@ -167,7 +205,7 @@ export async function paymentVerification(body) {
         });
       }
     } else {
-      const updatePaymentRecord = await updateDynamo({
+      const updatePaymentRecordPromise = await updateDynamo({
         params: {
           TableName: "order_data",
           Key: {
@@ -184,19 +222,53 @@ export async function paymentVerification(body) {
           ReturnValues: "ALL_NEW",
         },
       });
-      console.log(
-        "🚀 ~ paymentVerification ~ updatePaymentRecord:",
-        updatePaymentRecord
-      );
+
+      const getUserDetailPromise = getDynamoRecord({
+        dbName: 'users',
+        keyObject: {
+          email: email
+        }
+      })
+
+      const [updatePaymentRecord,getUserDetail] = await Promise.all([updatePaymentRecordPromise,getUserDetailPromise])
+        
+        console.log("🚀 ~ paymentVerification ~ updatePaymentRecord:",updatePaymentRecord);
+        console.log("🚀 ~ paymentVerification ~ getUserDetail:", getUserDetail)
+
+        const message = {
+          user: {
+            full_name: getUserDetail.body.full_name,
+            complete_address: getUserDetail.body.complete_address[0],
+            phone_number: getUserDetail.body.phone_number,
+          },
+          payment: {
+            razorpay_payment_id: updatePaymentRecord.body.razorpay_payment_id,
+            payment_status: updatePaymentRecord.body.razorpay_order_status,
+            date: updatePaymentRecord.body.date,
+          },
+          order_id: updatePaymentRecord.body.order_id,
+          order: updatePaymentRecord.body.order_detail,
+          payment_method: updatePaymentRecord.body.payment_mode,
+          delievery_charge: updatePaymentRecord?.body?.delievery_charge !== 0 ? updatePaymentRecord.body.delievery_charge : null,
+          sub_total: updatePaymentRecord.body.amounts,
+        }
+
+        const sendCustomerMail = await sendMailToClient({
+          toAddress: email,
+          subject: "Payment Failed",
+          message: message
+        });
+
+      console.log("🚀 ~ createOrderWithUser ~ sendMail:", sendCustomerMail);
       return buildResponse({
         code: 400,
         body: {
           message: "Payment failed, kindly go to cart and order again.",
           error_description: paymentStatus.error_description,
           order_id: receipt,
-            payment_id: id,
-            payment_status: payment_status,
-            order_status: order_status,
+          payment_id: id,
+          payment_status: payment_status,
+          order_status: order_status,
         },
       });
     }

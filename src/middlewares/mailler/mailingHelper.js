@@ -16,7 +16,7 @@ function generateHtml(htmlPath, replacements) {
 }
 
 function generateTeamMail(request) {
-  const { toAddress, fromAddress, subject, message } = request;
+  const { toAddress, subject, message } = request;
   const path = '../../views/mail.html'
   const htmlContent = generateHtml(path, message)
   const userAccount = {

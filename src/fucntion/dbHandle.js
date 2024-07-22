@@ -64,12 +64,16 @@ export async function createOrderWithUser(details) {
       return finalRes
     }
 
-    const sendMail = await sendMailToClient({ toAddress: UserSchema.email, subject: 'order success', message: { user: UserSchema.full_name, body: "order success" } })
-    console.log("🚀 ~ createOrderWithUser ~ sendMail:", sendMail)
+          
+    const sendCustomerMailPromise = sendMailToClient({ toAddress: UserSchema.email, subject: 'Order placed', message: { user:{full_name:UserSchema.full_name,complete_address:UserSchema.complete_address[0],phone_number:UserSchema.phone_number},order:orderSchema.order_detail,payment_method:orderSchema.payment_mode,sub_total:orderSchema.amounts,order_id:orderSchema.order_id,delievery_charge: orderSchema?.delievery_charge !== 0 ? orderSchema.delievery_charge : null, body: "order successfull" } })
+    const sendSellerMailPromise = sendMailToClient({ toAddress: 'timpeats0@gmail.com', subject: 'Order received', message: { user:{full_name:UserSchema.full_name,complete_address:UserSchema.complete_address[0],phone_number:UserSchema.phone_number},order:orderSchema.order_detail,payment_method:orderSchema.payment_mode,sub_total:orderSchema.amounts,order_id:orderSchema.order_id,delievery_charge: orderSchema?.delievery_charge !== 0 ? orderSchema.delievery_charge : null, body: "order Received" } })
+    const [sendCustomerMail,sendSellerMail] = await Promise.all([sendCustomerMailPromise,sendSellerMailPromise])
+    console.log("🚀 ~ createOrderWithUser ~ sendSellerMail:", sendSellerMail)
+    console.log("🚀 ~ createOrderWithUser ~ sendMail:", sendCustomerMail)
     const finalRes = buildResponse({
       code: 200,
       body: {
-        message: "user and order created successfully",
+        message: "Order placed successfully, futher you will notified by email.",
         sucess: true,
         order: orderSchema,
       },

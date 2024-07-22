@@ -28,7 +28,7 @@ export default function generateOrderSchema(order_details,amount,currency,user_i
         amounts:amount || 0,
         currency:currency || 'USD',  // or 'INR' or 'EUR' or 'GBP' or 'AUD' or 'CAD' or 'JPY' or 'CHF' or 'CNY' or 'HKD' or 'SGD' or 'MYR' or 'ZAR' or 'EUR' or 'BRL' or 'ILS' or 'KRW' or 'PHP' or 'TWD' or 'THB' or 'TRY
         tracking_id:order_details?.tracking_id || 'n/a',
-        order_status:order_details?.status || 'cart',											  
+        order_status:order_details?.payment_mode === 'cod' ? 'placed' : 'cart',											  
         createdAt: currentDate(),
         date: currentDate('dateString')
         //TODO: updatedAt:
